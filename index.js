@@ -23,8 +23,8 @@ async function fetch_and_combine() {
     const fn_status = await fetch_openfaas();
 
     // TODO: Remove debug files
-    fs.writeFileSync('static_info.json', JSON.stringify(static_info))
-    fs.writeFileSync('fn_status.json', JSON.stringify(fn_status))
+    // fs.writeFileSync('static_info.json', JSON.stringify(static_info))
+    // fs.writeFileSync('fn_status.json', JSON.stringify(fn_status))
 
     return combine(static_info, fn_status);
   } catch (e) {

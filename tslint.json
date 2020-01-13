@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "quotemark": [true, "single"],
         "variable-name": {
             "options": [
                 "allow-snake-case"

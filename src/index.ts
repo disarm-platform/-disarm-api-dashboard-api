@@ -1,47 +1,22 @@
-import axios from "axios";
-import dotenv from "dotenv";
-import express from "express";
+import axios from 'axios';
+import dotenv from 'dotenv';
+import express from 'express';
 // import fs from "fs";
-import { get, uniq, isUndefined, isNull } from "lodash";
-
-interface AirtableRecord {
-  function_name: string;
-  image_version: string;
-  repo: string;
-  scale_to_zero: boolean;
-  hide_from_deploy: boolean;
-  test_req: string;
-}
-interface OpenFaasRecord {
-  name: string;
-  image: string;
-  invocationCount: number;
-  replicas: number;
-  availableReplicas: number;
-}
-interface CombinedRecord {
-  function_name: string;
-  repo: string | null;
-  target_image_version: string | null;
-  deployed_image_version: string | null;
-  deployed_invocation_count: number | null;
-  availableReplicas: number | null;
-  test_req: string | null;
-  scale_to_zero: boolean;
-}
+import { get, uniq} from 'lodash';
+import { AirtableRecord, OpenFaasRecord, CombinedRecord } from './type';
 
 const DEFAULTS = {
   scale_to_zero: false,
 };
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
 exports.get_data = async (_: any, res: express.Response) => {
   try {
     const data = await fetch_and_combine();
-    res.writeHead(200, { "Content-Type": "application/json" });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   } catch (error) {
     console.error(error);
@@ -60,17 +35,17 @@ async function fetch_and_combine() {
     return combine(airtable_data, openfaas_data);
   } catch (e) {
     throw new Error(
-      "Cannot get OpenFaas or Airtable data - check connections and/or credentials?"
+      'Cannot get OpenFaas or Airtable data - check connections and/or credentials?'
     );
   }
 }
 
 async function fetch_airtable(): Promise<AirtableRecord[]> {
-  const url = "https://api.airtable.com/v0/app2A1oMnkLm1B747/algos";
+  const url = 'https://api.airtable.com/v0/app2A1oMnkLm1B747/algos';
   const AIRTABLE_KEY = process.env.AIRTABLE_KEY;
   const headers = { Authorization: AIRTABLE_KEY };
   const res = await axios.get(url, { headers });
-  const records = get(res, "data.records", []);
+  const records = get(res, 'data.records', []);
   if (records) {
     return records.map((record: any) => record.fields);
   }
@@ -80,7 +55,7 @@ async function fetch_airtable(): Promise<AirtableRecord[]> {
 
 async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
   //  Make request
-  const url = "https://faas.srv.disarm.io/system/functions";
+  const url = 'https://faas.srv.disarm.io/system/functions';
   const OPENFAAS_KEY = process.env.OPENFAAS_KEY;
   const headers = { Authorization: OPENFAAS_KEY };
   try {
@@ -89,9 +64,9 @@ async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
     if (res.data && res.data.length > 0) {
       return res.data.map((fields: any[]) => fields);
     }
-    throw new Error("Missing data from OpenFaas request");
+    throw new Error('Missing data from OpenFaas request');
   } catch (e) {
-    throw new Error("Missing data from OpenFaas request");
+    throw new Error('Missing data from OpenFaas request');
   }
 }
 
@@ -114,8 +89,6 @@ export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaas
     };
   });
 }
-
-
 
 function all_unique_names(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]) {
   const all_names = airtable_data.map((airtable_record) => {

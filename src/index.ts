@@ -1,18 +1,20 @@
-const get = require("lodash").get;
-const axios = require("axios");
-const fs = require('fs');
+import axios from "axios";
+import dotenv from "dotenv";
+import express from "express";
+// import fs from "fs";
+import {get} from "lodash";
 
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
 }
 
-exports.get_data = function (req, res) {
+exports.get_data = (req: express.Request, res: express.Response) => {
   fetch_and_combine()
-    .then(data => {
+    .then((data) => {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(data));
     })
-    .catch(e => {
+    .catch((e) => {
       console.error(e);
     });
 };
@@ -41,7 +43,7 @@ async function fetch_airtable() {
   const res = await axios.get(url, { headers });
   const records = get(res, "data.records", []);
   if (records) {
-    return records.map(record => record.fields);
+    return records.map((record: any) => record.fields);
   }
 
   return [];
@@ -56,7 +58,7 @@ async function fetch_openfaas() {
     const res = await axios.get(url, { headers });
     //  Check response
     if (res.data && res.data.length > 0) {
-      return res.data.map(fields => fields);
+      return res.data.map((fields: any[]) => fields);
     }
     throw new Error("Missing data from OpenFaas request");
   } catch (e) {
@@ -64,9 +66,9 @@ async function fetch_openfaas() {
   }
 }
 
-function combine(static_info, fn_status) {
+function combine(static_info: any[], fn_status: any[]) {
 
-  return static_info.map(f => {
+  return static_info.map((f) => {
     const remote_image = get(
       find_image_by_name(f.function_name, fn_status),
       "image",
@@ -78,6 +80,6 @@ function combine(static_info, fn_status) {
   });
 }
 
-function find_image_by_name(name, fn_status) {
-  return fn_status.find(s => s.function_name === name);
+function find_image_by_name(name: string, fn_status: any[]) {
+  return fn_status.find((s) => s.function_name === name);
 }

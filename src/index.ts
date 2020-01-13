@@ -2,21 +2,20 @@ import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
 // import fs from "fs";
-import {get} from "lodash";
+import { get } from "lodash";
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
 }
 
-exports.get_data = (req: express.Request, res: express.Response) => {
-  fetch_and_combine()
-    .then((data) => {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(data));
-    })
-    .catch((e) => {
-      console.error(e);
-    });
+exports.get_data = async (_: any, res: express.Response) => {
+  try {
+    const data = await fetch_and_combine();
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(data));
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 async function fetch_and_combine() {

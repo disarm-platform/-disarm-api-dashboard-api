@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
-    "start": "functions-framework --source=lib --target=get_data",
+    "start": "npm run build; functions-framework --source=lib --target=get_data",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

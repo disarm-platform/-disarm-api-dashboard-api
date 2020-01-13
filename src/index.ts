@@ -2,7 +2,37 @@ import axios from "axios";
 import dotenv from "dotenv";
 import express from "express";
 // import fs from "fs";
-import { get } from "lodash";
+import { get, uniq, isUndefined, isNull } from "lodash";
+
+interface AirtableRecord {
+  function_name: string;
+  image_version: string;
+  repo: string;
+  scale_to_zero: boolean;
+  hide_from_deploy: boolean;
+  test_req: string;
+}
+interface OpenFaasRecord {
+  name: string;
+  image: string;
+  invocationCount: number;
+  replicas: number;
+  availableReplicas: number;
+}
+interface CombinedRecord {
+  function_name: string;
+  repo: string | null;
+  target_image_version: string | null;
+  deployed_image_version: string | null;
+  deployed_invocation_count: number | null;
+  availableReplicas: number | null;
+  test_req: string | null;
+  scale_to_zero: boolean;
+}
+
+const DEFAULTS = {
+  scale_to_zero: false,
+};
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
@@ -35,14 +65,6 @@ async function fetch_and_combine() {
   }
 }
 
-interface AirtableRecord {
-  function_name: string;
-  image_version: string;
-  repo: string;
-  scale_to_zero: boolean;
-  hide_from_deploy: boolean;
-}
-
 async function fetch_airtable(): Promise<AirtableRecord[]> {
   const url = "https://api.airtable.com/v0/app2A1oMnkLm1B747/algos";
   const AIRTABLE_KEY = process.env.AIRTABLE_KEY;
@@ -54,14 +76,6 @@ async function fetch_airtable(): Promise<AirtableRecord[]> {
   }
 
   return [];
-}
-
-interface OpenFaasRecord {
-  name: string;
-  image: string;
-  invocationCount: number;
-  replicas: number;
-  availableReplicas: number;
 }
 
 async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
@@ -81,18 +95,44 @@ async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
   }
 }
 
-function combine(airtable_data: any[], openfaas_data: any[]) {
+export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]): CombinedRecord[] {
+  const uniq_names = all_unique_names(airtable_data, openfaas_data);
 
-  return airtable_data.map((f) => {
-    const remote_image = get(
-      find_image_by_name(f.function_name, openfaas_data),
-      "image",
-      "no image"
-    );
-    return Object.assign({ image: remote_image }, f, {
-      live: remote_image !== "no image"
-    });
+  return uniq_names.map((uniq_name) => {
+    const airtable_record = find_airtable_record_by_name(uniq_name, airtable_data);
+    const openfaas_record = find_openfaas_record_by_name(uniq_name, openfaas_data);
+
+    return {
+      function_name: uniq_name,
+      repo: airtable_record?.repo || null,
+      target_image_version: airtable_record?.image_version || null,
+      deployed_image_version: openfaas_record?.image || null,
+      deployed_invocation_count: openfaas_record?.invocationCount || null,
+      availableReplicas: openfaas_record?.availableReplicas || null,
+      test_req: airtable_record?.test_req || null,
+      scale_to_zero: airtable_record?.scale_to_zero || false,
+    };
   });
+}
+
+
+
+function all_unique_names(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]) {
+  const all_names = airtable_data.map((airtable_record) => {
+    return airtable_record.function_name;
+  }).concat(openfaas_data.map((openfaas_record) => {
+    return openfaas_record.name;
+  })).sort();
+  const unique = uniq(all_names);
+  return unique;
+}
+
+function find_airtable_record_by_name(name: string, airtable_data: AirtableRecord[]): AirtableRecord | undefined {
+  return airtable_data.find((r) => r.function_name === name);
+}
+
+function find_openfaas_record_by_name(name: string, openfaas_data: OpenFaasRecord[]): OpenFaasRecord | undefined {
+  return openfaas_data.find((r) => r.name === name);
 }
 
 function find_image_by_name(name: string, openfaas_data: any[]) {

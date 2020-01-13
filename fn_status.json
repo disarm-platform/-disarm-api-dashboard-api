@@ -1,0 +1,233 @@
+[
+  {
+    "name": "fn-bvbd-forecast",
+    "image": "disarm/fn-bvbd:0.0.1",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-bvbd-forecast",
+      "com.openfaas.uid": "102337846",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-cv-ml",
+    "image": "disarm/fn-cv-ml:0.0.6",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-cv-ml",
+      "com.openfaas.uid": "370391850",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-prevalence-predictor-spamm",
+    "image": "disarm/fn-prevalence-predictor-spamm:0.0.9",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-prevalence-predictor-spamm",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-dbscan-clusterer",
+    "image": "disarm/fn-dbscan-clusterer:0.0.16",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-dbscan-clusterer",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-raster-vector-summary-stats",
+    "image": "disarm/fn-raster-vector-summary-stats:0.0.8@sha256:c4afbea6eefc29ed8ed39631fed94b560be8411b1ddd648461d28ad064e6fc87",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-raster-vector-summary-stats",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-adaptive-sampling",
+    "image": "disarm/fn-adaptive-sampling:0.2.2",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-adaptive-sampling",
+      "com.openfaas.uid": "813951368",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "longrun",
+    "image": "onlyjsmith/longrun:0.1.0",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "node index.js",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "longrun",
+      "com.openfaas.uid": "824978460",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "plus-1",
+    "image": "onlyjsmith/plus-1:latest",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "python index.py",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "plus-1",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-prevalence-predictor",
+    "image": "disarm/fn-prevalence-predictor:1.1.6",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-prevalence-predictor",
+      "com.openfaas.uid": "194281075",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-bvbd",
+    "image": "disarm/fn-bvbd:0.0.3",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-bvbd",
+      "com.openfaas.uid": "177820349",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-ppmify",
+    "image": "disarm/fn-ppmify:0.0.5",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-ppmify",
+      "com.openfaas.uid": "672701388",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "cows",
+    "image": "alexellis2/ascii-cows-openfaas:0.1@sha256:4249c10986cdaa42f0e9acb8228137e28cf165ed2b611d7bfdb4a855e8574a94",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "node show_cow.js",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "cows",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-village-finder",
+    "image": "disarm/fn-village-finder:0.0.1@sha256:001e46fa5bb994fc6615ac5b3651b31211b64d8085465010c4cd94864f509ddd",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-village-finder",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-prevalence-predictor-mgcv",
+    "image": "disarm/fn-prevalence-predictor-mgcv:0.0.4",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "Rscript main.R",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-prevalence-predictor-mgcv",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "faas-template-r-fn",
+    "image": "disarm/faas-template-r-fn:0.1.1",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "faas-template-r-fn",
+      "com.openfaas.uid": "134958720",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-cv-hal",
+    "image": "disarm/fn-cv-hal:0.0.4",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-cv-hal",
+      "com.openfaas.uid": "917640620",
+      "function": "true"
+    },
+    "annotations": null
+  },
+  {
+    "name": "fn-covariate-extractor",
+    "image": "disarm/fn-covariate-extractor:0.0.15",
+    "invocationCount": 0,
+    "replicas": 1,
+    "envProcess": "",
+    "availableReplicas": 0,
+    "labels": {
+      "com.openfaas.function": "fn-covariate-extractor",
+      "com.openfaas.uid": "19094496",
+      "function": "true"
+    },
+    "annotations": null
+  }
+]

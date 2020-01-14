@@ -4,6 +4,7 @@ import express from 'express';
 // import fs from "fs";
 import { get, uniq, pick, isUndefined } from 'lodash';
 import { AirtableRecord, OpenFaasRecord, BasicRecord, ComputedRecord } from './type';
+import { isNull } from 'util';
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
@@ -86,6 +87,7 @@ export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaas
       target_image_version: null,
       scale_to_zero: false,
       test_req: null,
+      uses_template: false,
 
       // OpenFaas
       deployed_image_version: null,
@@ -93,7 +95,7 @@ export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaas
       available_replicas: null,
     };
 
-    const airtable_fields = ['repo', 'hide_from_deploy', 'target_image_version', 'scale_to_zero', 'test_req'];
+    const airtable_fields = ['repo', 'hide_from_deploy', 'target_image_version', 'scale_to_zero', 'test_req', 'uses_template'];
     const airtable_properties = pick(airtable_record, airtable_fields);
 
     const openfaas_fields = ['image', 'invocationCount', 'availableReplicas'];
@@ -146,7 +148,8 @@ function compute(basic: BasicRecord): ComputedRecord {
   const running = !!(deployed && basic.available_replicas && basic.available_replicas > 0);
   const sleeping = !!(deployed && (basic.scale_to_zero && basic.available_replicas === 0));
   const testable = !!(deployed && (basic.test_req !== null));
-  const upgradable = !!(deployed && (basic.deployed_image_version !== basic.target_image_version));
+  const upgradable = !!(deployed && !isNull(basic.deployed_image_version) &&
+    !isNull(basic.target_image_version) && (basic.deployed_image_version !== basic.target_image_version));
 
   const computed = {
     deployed,

@@ -26,6 +26,7 @@ export interface BasicRecord {
   target_image_version: string | null;
   scale_to_zero: boolean;
   test_req: string | null;
+  uses_template: boolean;
 
   // OpenFaas
   deployed_image_version: string | null; // openfaas_record.image

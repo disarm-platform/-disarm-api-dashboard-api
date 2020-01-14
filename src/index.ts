@@ -2,12 +2,8 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import express from 'express';
 // import fs from "fs";
-import { get, uniq, pick, isUndefined, isNull } from 'lodash';
+import { get, uniq, pick, isUndefined } from 'lodash';
 import { AirtableRecord, OpenFaasRecord, BasicRecord, ComputedRecord } from './type';
-
-const DEFAULTS = {
-  scale_to_zero: false,
-};
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();

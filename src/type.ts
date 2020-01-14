@@ -13,13 +13,30 @@ export interface OpenFaasRecord {
   replicas: number;
   availableReplicas: number;
 }
-export interface CombinedRecord {
+export interface BasicRecord {
   function_name: string;
+  // Airtable
+  hide_from_deploy: boolean | null;
   repo: string | null;
   target_image_version: string | null;
+  scale_to_zero: boolean;
+  test_req: string | null;
+  // OpenFaas
   deployed_image_version: string | null;
   deployed_invocation_count: number | null;
   availableReplicas: number | null;
-  test_req: string | null;
-  scale_to_zero: boolean;
+}
+
+export interface ComputedRecord {
+  // Computed
+  deployed: boolean;
+  hideable: boolean;
+  running: boolean;
+  sleeping: boolean;
+  upgradable: boolean;
+  testable: boolean;
+}
+
+export interface CombinedRecord extends BasicRecord {
+  computed: ComputedRecord;
 }

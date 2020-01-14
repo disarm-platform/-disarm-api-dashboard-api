@@ -2,8 +2,8 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import express from 'express';
 // import fs from "fs";
-import { get, uniq} from 'lodash';
-import { AirtableRecord, OpenFaasRecord, CombinedRecord } from './type';
+import { get, uniq, pick } from 'lodash';
+import { AirtableRecord, OpenFaasRecord, BasicRecord, ComputedRecord } from './type';
 
 const DEFAULTS = {
   scale_to_zero: false,
@@ -70,22 +70,44 @@ async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
   }
 }
 
-export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]): CombinedRecord[] {
+export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]): BasicRecord[] {
   const uniq_names = all_unique_names(airtable_data, openfaas_data);
 
   return uniq_names.map((uniq_name) => {
     const airtable_record = find_airtable_record_by_name(uniq_name, airtable_data);
     const openfaas_record = find_openfaas_record_by_name(uniq_name, openfaas_data);
 
-    return {
+    const default_record = {
       function_name: uniq_name,
-      repo: airtable_record?.repo || null,
-      target_image_version: airtable_record?.image_version || null,
-      deployed_image_version: openfaas_record?.image || null,
-      deployed_invocation_count: openfaas_record?.invocationCount || null,
-      availableReplicas: openfaas_record?.availableReplicas || null,
-      test_req: airtable_record?.test_req || null,
-      scale_to_zero: airtable_record?.scale_to_zero || false,
+      // Airtable
+      repo: null,
+      hide_from_deploy: null,
+      target_image_version: null,
+      scale_to_zero: false,
+      test_req: null,
+      // OpenFaas
+      deployed_image_version: null,
+      deployed_invocation_count: null,
+      availableReplicas: null,
+    };
+
+    const airtable_fields = ['repo', 'hide_from_deploy', 'target_image_version', 'scale_to_zero', 'test_req'];
+    const openfaas_fields = ['deployed_image_version', 'deployed_invocation_count', 'availableReplicas'];
+
+    const airtable_properties = pick(airtable_record, airtable_fields);
+    const openfaas_properties = pick(openfaas_record, openfaas_fields);
+
+    const basic = {
+      ...default_record,
+      ...airtable_properties,
+      ...openfaas_properties,
+    };
+
+    const computed = compute(basic);
+
+    return {
+      ...basic,
+      computed,
     };
   });
 }
@@ -108,6 +130,22 @@ function find_openfaas_record_by_name(name: string, openfaas_data: OpenFaasRecor
   return openfaas_data.find((r) => r.name === name);
 }
 
-function find_image_by_name(name: string, openfaas_data: any[]) {
-  return openfaas_data.find((s) => s.function_name === name);
+function compute(basic: BasicRecord): ComputedRecord {
+  const deployed = !!(basic.deployed_image_version !== null);
+  const hideable = !!(deployed && basic.hide_from_deploy);
+  const running = !!(deployed && basic.availableReplicas && basic.availableReplicas > 0);
+  const sleeping = !!(deployed && (basic.scale_to_zero && basic.availableReplicas === 0));
+  const testable = !!(deployed && (basic.test_req !== null));
+  const upgradable = !!(deployed && (basic.deployed_image_version === basic.target_image_version));
+
+  const computed = {
+    deployed,
+    hideable,
+    running,
+    sleeping,
+    testable,
+    upgradable,
+  };
+
+  return computed;
 }

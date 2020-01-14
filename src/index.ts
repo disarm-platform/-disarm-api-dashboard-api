@@ -79,12 +79,16 @@ export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaas
 
     const default_record = {
       function_name: uniq_name,
+      missing_from_airtable: isUndefined(airtable_record?.function_name),
+      missing_from_openfaas: isUndefined(openfaas_record?.image),
+
       // Airtable
       repo: null,
       hide_from_deploy: null,
       target_image_version: null,
       scale_to_zero: false,
       test_req: null,
+
       // OpenFaas
       deployed_image_version: null,
       deployed_invocation_count: null,
@@ -141,9 +145,6 @@ function find_openfaas_record_by_name(name: string, openfaas_data: OpenFaasRecor
 function compute(basic: BasicRecord): ComputedRecord {
   const deployed = !!(basic.deployed_image_version !== null);
   const hideable = !!(deployed && basic.hide_from_deploy);
-  // TODO: Move these 'missing' computes somewhere else
-  const missing_from_airtable = isNull(basic.target_image_version);
-  const missing_from_openfaas = !deployed;
   const running = !!(deployed && basic.available_replicas && basic.available_replicas > 0);
   const sleeping = !!(deployed && (basic.scale_to_zero && basic.available_replicas === 0));
   const testable = !!(deployed && (basic.test_req !== null));
@@ -152,8 +153,6 @@ function compute(basic: BasicRecord): ComputedRecord {
   const computed = {
     deployed,
     hideable,
-    missing_from_airtable,
-    missing_from_openfaas,
     running,
     sleeping,
     testable,

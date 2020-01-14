@@ -15,12 +15,16 @@ export interface OpenFaasRecord {
 }
 export interface BasicRecord {
   function_name: string;
+  missing_from_airtable: boolean;
+  missing_from_openfaas: boolean;
+
   // Airtable
   hide_from_deploy: boolean | null;
   repo: string | null;
   target_image_version: string | null;
   scale_to_zero: boolean;
   test_req: string | null;
+
   // OpenFaas
   deployed_image_version: string | null; // openfaas_record.image
   deployed_invocation_count: number | null; // openfaas_record.invocationCount
@@ -31,8 +35,6 @@ export interface ComputedRecord {
   // Computed
   deployed: boolean;
   hideable: boolean;
-  missing_from_airtable: boolean;
-  missing_from_openfaas: boolean;
   running: boolean;
   sleeping: boolean;
   upgradable: boolean;

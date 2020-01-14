@@ -144,7 +144,7 @@ function compute(basic: BasicRecord): ComputedRecord {
   const running = !!(deployed && basic.available_replicas && basic.available_replicas > 0);
   const sleeping = !!(deployed && (basic.scale_to_zero && basic.available_replicas === 0));
   const testable = !!(deployed && (basic.test_req !== null));
-  const upgradable = !!(deployed && (basic.deployed_image_version === basic.target_image_version));
+  const upgradable = !!(deployed && (basic.deployed_image_version !== basic.target_image_version));
 
   const computed = {
     deployed,

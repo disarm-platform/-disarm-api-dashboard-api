@@ -22,15 +22,17 @@ export interface BasicRecord {
   scale_to_zero: boolean;
   test_req: string | null;
   // OpenFaas
-  deployed_image_version: string | null;
-  deployed_invocation_count: number | null;
-  availableReplicas: number | null;
+  deployed_image_version: string | null; // openfaas_record.image
+  deployed_invocation_count: number | null; // openfaas_record.invocationCount
+  available_replicas: number | null; // openfaas_record.availableReplicas
 }
 
 export interface ComputedRecord {
   // Computed
   deployed: boolean;
   hideable: boolean;
+  missing_from_airtable: boolean;
+  missing_from_openfaas: boolean;
   running: boolean;
   sleeping: boolean;
   upgradable: boolean;

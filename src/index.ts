@@ -2,7 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import express from 'express';
 // import fs from "fs";
-import { get, uniq, pick } from 'lodash';
+import { get, uniq, pick, isUndefined, isNull } from 'lodash';
 import { AirtableRecord, OpenFaasRecord, BasicRecord, ComputedRecord } from './type';
 
 const DEFAULTS = {
@@ -88,19 +88,27 @@ export function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaas
       // OpenFaas
       deployed_image_version: null,
       deployed_invocation_count: null,
-      availableReplicas: null,
+      available_replicas: null,
     };
 
     const airtable_fields = ['repo', 'hide_from_deploy', 'target_image_version', 'scale_to_zero', 'test_req'];
-    const openfaas_fields = ['deployed_image_version', 'deployed_invocation_count', 'availableReplicas'];
-
     const airtable_properties = pick(airtable_record, airtable_fields);
+
+    const openfaas_fields = ['image', 'invocationCount', 'availableReplicas'];
     const openfaas_properties = pick(openfaas_record, openfaas_fields);
+
+    const renamed_openfaas_properties = {
+      deployed_image_version: !isUndefined(openfaas_properties.image) ? openfaas_properties.image : null,
+      deployed_invocation_count: !isUndefined(openfaas_properties.invocationCount) ?
+        openfaas_properties.invocationCount : null,
+      available_replicas: !isUndefined(openfaas_properties.availableReplicas) ?
+        openfaas_properties.availableReplicas : null,
+    };
 
     const basic = {
       ...default_record,
       ...airtable_properties,
-      ...openfaas_properties,
+      ...renamed_openfaas_properties,
     };
 
     const computed = compute(basic);
@@ -133,14 +141,19 @@ function find_openfaas_record_by_name(name: string, openfaas_data: OpenFaasRecor
 function compute(basic: BasicRecord): ComputedRecord {
   const deployed = !!(basic.deployed_image_version !== null);
   const hideable = !!(deployed && basic.hide_from_deploy);
-  const running = !!(deployed && basic.availableReplicas && basic.availableReplicas > 0);
-  const sleeping = !!(deployed && (basic.scale_to_zero && basic.availableReplicas === 0));
+  // TODO: Move these 'missing' computes somewhere else
+  const missing_from_airtable = isNull(basic.target_image_version);
+  const missing_from_openfaas = !deployed;
+  const running = !!(deployed && basic.available_replicas && basic.available_replicas > 0);
+  const sleeping = !!(deployed && (basic.scale_to_zero && basic.available_replicas === 0));
   const testable = !!(deployed && (basic.test_req !== null));
   const upgradable = !!(deployed && (basic.deployed_image_version === basic.target_image_version));
 
   const computed = {
     deployed,
     hideable,
+    missing_from_airtable,
+    missing_from_openfaas,
     running,
     sleeping,
     testable,

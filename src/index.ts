@@ -12,6 +12,8 @@ if (process.env.NODE_ENV !== 'production') {
 exports.get_data = async (_: any, res: express.Response) => {
   try {
     const data = await fetch_and_combine();
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   } catch (error) {

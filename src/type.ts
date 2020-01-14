@@ -6,6 +6,7 @@ export interface AirtableRecord {
   hide_from_deploy: boolean;
   test_req: string;
 }
+
 export interface OpenFaasRecord {
   name: string;
   image: string;
@@ -13,6 +14,7 @@ export interface OpenFaasRecord {
   replicas: number;
   availableReplicas: number;
 }
+
 export interface BasicRecord {
   function_name: string;
   missing_from_airtable: boolean;

@@ -14,10 +14,7 @@
         "trailing-comma": true,
         "semicolon": true,
         "interface-name": false,
-        "no-console": [
-            true,
-            "log"
-        ],
+        "no-console": false,
         "object-literal-sort-keys": false,
         "ordered-imports": false
     },

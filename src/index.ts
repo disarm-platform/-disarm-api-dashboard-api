@@ -13,7 +13,7 @@ if (process.env.NODE_ENV !== 'production') {
 const CONFIG = {
   airtable_url: 'https://api.airtable.com/v0/app2A1oMnkLm1B747/algos',
   airtable_key: process.env.AIRTABLE_KEY,
-  openfaas_url: process.env.OPENFAAS_URL || 'https://faas.srv.disarm.io/system/functions',
+  openfaas_url: process.env.OPENFAAS_URL || 'https://faas.srv.disarm.io',
   openfaas_key: process.env.OPENFAAS_KEY
 };
 
@@ -24,10 +24,10 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
 
   switch (command) {
     case '':
-      list(res);
+      list(req, res);
       break;
     case 'list':
-      list(res);
+      list(req, res);
       break;
     case 'deploy':
       if (!function_name) {
@@ -51,14 +51,14 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
         res.end('Missing function_name in path');
         return;
       }
-      res.send(`logs ${function_name}`);
+      logs(req, res, function_name);
       break;
     default:
       break;
   }
 };
 
-async function list(res: express.Response) {
+async function list(req: express.Request, res: express.Response) {
   try {
     const data = await fetch_and_combine();
     res.set('Access-Control-Allow-Origin', '*');
@@ -69,6 +69,19 @@ async function list(res: express.Response) {
     console.error(error);
   }
 
+}
+
+async function logs(req: express.Request, res: express.Response, function_name: string) {
+  try {
+    const url = `${CONFIG.openfaas_url}/system/logs`;
+    const headers = { Authorization: CONFIG.airtable_key };
+    const params = { name: function_name, tail: 10 };
+    const log_res = await axios.get(url, { headers, params });
+    console.log(log_res.data);
+    res.end(log_res.data);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function fetch_and_combine() {
@@ -102,7 +115,7 @@ async function fetch_airtable(): Promise<AirtableRecord[]> {
 
 async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
   //  Make request
-  const url = CONFIG.openfaas_url;
+  const url = `${CONFIG.openfaas_url}/system/functions`;
   const headers = { Authorization: CONFIG.openfaas_key };
   try {
     const res = await axios.get(url, { headers });

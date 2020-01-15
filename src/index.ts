@@ -3,8 +3,12 @@ import dotenv from 'dotenv';
 import express from 'express';
 // import fs from 'fs';
 import { get, uniq, pick, isUndefined } from 'lodash';
-import { AirtableRecord, OpenFaasRecord, BasicRecord, ComputedRecord } from './type';
+import { AirtableRecord, OpenFaasRecord, BasicRecord, ComputedRecord } from './types';
 import { isNull } from 'util';
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const CONFIG = {
   airtable_url: 'https://api.airtable.com/v0/app2A1oMnkLm1B747/algos',
@@ -13,11 +17,49 @@ const CONFIG = {
   openfaas_key: process.env.OPENFAAS_KEY
 };
 
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
-}
 
-exports.get_data = async (_: any, res: express.Response) => {
+exports.get_data = async (req: express.Request, res: express.Response) => {
+  const split = req.path.split('/');
+  const command = split[1];
+  const function_name = split[2];
+
+  switch (command) {
+    case '':
+      list(res);
+      break;
+    case 'list':
+      list(res);
+      break;
+    case 'deploy':
+      if (!function_name) {
+        res.writeHead(400);
+        res.end('Missing function_name in path');
+        return;
+      }
+      res.send(`deploy ${function_name}`);
+      break;
+    case 'undeploy':
+      if (!function_name) {
+        res.writeHead(400);
+        res.end('Missing function_name in path');
+        return;
+      }
+      res.send(`undeploy ${function_name}`);
+      break;
+    case 'logs':
+      if (!function_name) {
+        res.writeHead(400);
+        res.end('Missing function_name in path');
+        return;
+      }
+      res.send(`logs ${function_name}`);
+      break;
+    default:
+      break;
+  }
+};
+
+async function list(res: express.Response) {
   try {
     const data = await fetch_and_combine();
     res.set('Access-Control-Allow-Origin', '*');
@@ -27,7 +69,8 @@ exports.get_data = async (_: any, res: express.Response) => {
   } catch (error) {
     console.error(error);
   }
-};
+
+}
 
 async function fetch_and_combine() {
   try {

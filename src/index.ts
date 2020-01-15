@@ -17,7 +17,6 @@ const CONFIG = {
   openfaas_key: process.env.OPENFAAS_KEY
 };
 
-
 exports.get_data = async (req: express.Request, res: express.Response) => {
   const split = req.path.split('/');
   const command = split[1];

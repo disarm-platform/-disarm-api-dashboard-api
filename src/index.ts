@@ -28,7 +28,7 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
       if (!function_name) {
         return missing_function_name(res);
       }
-      undeploy(res, function_name);
+      undeploy(req, res, function_name);
       break;
     default:
       res.writeHead(400);

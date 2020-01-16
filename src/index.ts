@@ -62,6 +62,8 @@ async function list(req: express.Request, res: express.Response) {
     res.end(JSON.stringify(data));
   } catch (error) {
     console.error(error);
+    res.writeHead(500);
+    res.end(error.message || 'Not sure what happened');
   }
 
 }
@@ -69,8 +71,8 @@ async function list(req: express.Request, res: express.Response) {
 async function deploy(req: express.Request, res: express.Response, function_name: string) {
   try {
     const url = `${CONFIG.openfaas_url}/system/functions`;
-    const headers = { Authorization: CONFIG.airtable_key };
-    const params = { name: function_name, tail: 10 };
+    const headers = { Authorization: CONFIG.openfaas_key };
+    const params = req.body;
     const log_res = await axios.post(url, { headers, params });
     console.log(log_res.data);
     res.end(log_res.data);
@@ -83,7 +85,7 @@ async function undeploy(req: express.Request, res: express.Response, function_na
   try {
     const url = `${CONFIG.openfaas_url}/system/functions`;
     const headers = { Authorization: CONFIG.airtable_key };
-    const params = { name: function_name, tail: 10 };
+    const params = { functionName: function_name };
     const log_res = await axios.delete(url, { headers, params });
     console.log(log_res.data);
     res.end(log_res.data);
@@ -93,20 +95,30 @@ async function undeploy(req: express.Request, res: express.Response, function_na
 }
 
 async function fetch_and_combine() {
+  let openfaas_data: OpenFaasRecord[];
+  let airtable_data: AirtableRecord[];
+
   try {
-    const airtable_data = await fetch_airtable();
-    const openfaas_data = await fetch_openfaas();
-
-    // TODO: Remove debug files
-    // fs.writeFileSync('airtable_data.json', JSON.stringify(airtable_data));
-    // fs.writeFileSync('openfaas_data.json', JSON.stringify(openfaas_data));
-
-    return combine(airtable_data, openfaas_data);
-  } catch (e) {
+    openfaas_data = await fetch_openfaas();
+  } catch {
     throw new Error(
-      'Cannot get OpenFaas or Airtable data - check connections and/or credentials?'
+      'Cannot get OpenFaas data - check connections and/or credentials?'
     );
   }
+
+  try {
+    airtable_data = await fetch_airtable();
+  } catch {
+    throw new Error(
+      'Cannot get Airtable data - check connections and/or credentials?'
+    );
+  }
+
+  // TODO: Remove debug files
+  // fs.writeFileSync('airtable_data.json', JSON.stringify(airtable_data));
+  // fs.writeFileSync('openfaas_data.json', JSON.stringify(openfaas_data));
+
+  return combine(airtable_data, openfaas_data);
 }
 
 async function fetch_airtable(): Promise<AirtableRecord[]> {
@@ -127,11 +139,12 @@ async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
   const headers = { Authorization: CONFIG.openfaas_key };
   try {
     const res = await axios.get(url, { headers });
-    //  Check response
+    // TODO: Not sure why we need to check
     if (res.data && res.data.length > 0) {
       return res.data.map((fields: any[]) => fields);
+    } else {
+      throw new Error('Missing data from OpenFaas request');
     }
-    throw new Error('Missing data from OpenFaas request');
   } catch (e) {
     throw new Error('Missing data from OpenFaas request');
   }

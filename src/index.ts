@@ -4,8 +4,6 @@ import { list } from './list';
 import { deploy, undeploy } from './actions';
 
 function missing_function_name(res: express.Response) {
-  res.writeHead(400);
-  res.end('Missing function_name in path');
 }
 
 exports.get_data = async (req: express.Request, res: express.Response) => {
@@ -13,22 +11,22 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
 
   switch (command) {
     case '':
-      list(res);
+      list(req, res);
       break;
     case 'list':
-      list(res);
+      list(req, res);
       break;
     case 'deploy':
-      if (!function_name) {
-        return missing_function_name(res);
-      }
       deploy(req, res);
       break;
     case 'undeploy':
-      if (!function_name) {
-        return missing_function_name(res);
+      if (function_name) {
+        undeploy(req, res, function_name);
+      } else {
+        res.writeHead(400);
+        res.end('Missing function_name in path');
+        return;
       }
-      undeploy(req, res, function_name);
       break;
     default:
       res.writeHead(400);

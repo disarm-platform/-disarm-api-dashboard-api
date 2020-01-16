@@ -5,7 +5,7 @@ import { get, isNull, isUndefined, pick, uniq } from 'lodash';
 import { BasicRecord, OpenFaasRecord, AirtableRecord, ComputedRecord } from './types';
 import { CONFIG } from './config';
 
-export async function list(res: express.Response) {
+export async function list(req: express.Request, res: express.Response) {
   try {
     const data = await fetch_and_combine();
     res.set('Access-Control-Allow-Origin', '*');

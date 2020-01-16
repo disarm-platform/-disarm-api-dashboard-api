@@ -31,32 +31,27 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
       break;
     case 'deploy':
       if (!function_name) {
-        res.writeHead(400);
-        res.end('Missing function_name in path');
-        return;
+        return missing_function_name(res);
       }
-      res.send(`deploy ${function_name}`);
+      deploy(req, res, function_name);
       break;
     case 'undeploy':
       if (!function_name) {
-        res.writeHead(400);
-        res.end('Missing function_name in path');
-        return;
+        return missing_function_name(res);
       }
-      res.send(`undeploy ${function_name}`);
-      break;
-    case 'logs':
-      if (!function_name) {
-        res.writeHead(400);
-        res.end('Missing function_name in path');
-        return;
-      }
-      logs(req, res, function_name);
+      undeploy(req, res, function_name);
       break;
     default:
+      res.writeHead(400);
+      res.end('Unknown request - not sure what you\'re trying to do. Check request');
       break;
   }
 };
+
+function missing_function_name(res: express.Response) {
+  res.writeHead(400);
+  res.end('Missing function_name in path');
+}
 
 async function list(req: express.Request, res: express.Response) {
   try {
@@ -71,12 +66,25 @@ async function list(req: express.Request, res: express.Response) {
 
 }
 
-async function logs(req: express.Request, res: express.Response, function_name: string) {
+async function deploy(req: express.Request, res: express.Response, function_name: string) {
   try {
-    const url = `${CONFIG.openfaas_url}/system/logs`;
+    const url = `${CONFIG.openfaas_url}/system/functions`;
     const headers = { Authorization: CONFIG.airtable_key };
     const params = { name: function_name, tail: 10 };
-    const log_res = await axios.get(url, { headers, params });
+    const log_res = await axios.post(url, { headers, params });
+    console.log(log_res.data);
+    res.end(log_res.data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function undeploy(req: express.Request, res: express.Response, function_name: string) {
+  try {
+    const url = `${CONFIG.openfaas_url}/system/functions`;
+    const headers = { Authorization: CONFIG.airtable_key };
+    const params = { name: function_name, tail: 10 };
+    const log_res = await axios.delete(url, { headers, params });
     console.log(log_res.data);
     res.end(log_res.data);
   } catch (error) {

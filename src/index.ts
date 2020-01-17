@@ -3,9 +3,6 @@ import express from 'express';
 import { list } from './list';
 import { deploy, undeploy } from './actions';
 
-function missing_function_name(res: express.Response) {
-}
-
 exports.get_data = async (req: express.Request, res: express.Response) => {
   const [, command, function_name] = req.path.split('/'); // Yup, need that first comma!
 

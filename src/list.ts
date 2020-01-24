@@ -1,3 +1,4 @@
+// import fs from 'fs';
 import axios from 'axios';
 import express from 'express';
 import { get, isNull, isUndefined, pick, uniq } from 'lodash';
@@ -26,7 +27,12 @@ async function fetch_and_combine() {
   try {
     airtable_data = await fetch_airtable();
     openfaas_data = await fetch_openfaas();
-  } catch {
+    // fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
+    // fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
+    // airtable_data = JSON.parse(fs.readFileSync('sample_responses/airtable_data.json', 'utf8'));
+    // openfaas_data = JSON.parse(fs.readFileSync('sample_responses/openfaas_data.json', 'utf8'));
+  } catch (e) {
+    console.error(e);
     throw new Error(
       'Cannot get Airtable or OpenFaas data - check connections and/or credentials?'
     );

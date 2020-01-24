@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
 import express from 'express';
 
 import { CONFIG } from './config';

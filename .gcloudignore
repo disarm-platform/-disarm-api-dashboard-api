@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+.gitignore
+.vscode
+tslint.json
+tsconfig.json
+src/
+node_modules/
+sample_responses/
+.env

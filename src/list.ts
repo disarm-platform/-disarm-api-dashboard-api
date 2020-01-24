@@ -105,7 +105,7 @@ function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[
     const airtable_fields = ['repo', 'hide_from_deploy', 'target_image_version', 'scale_to_zero', 'test_req', 'uses_template'];
     const airtable_properties = pick(airtable_record, airtable_fields);
 
-    const openfaas_fields = ['image', 'invocationCount', 'availableReplicas'];
+    const openfaas_fields = ['image', 'invocationCount', 'replicas'];
     const openfaas_properties = pick(openfaas_record, openfaas_fields);
 
     const renamed_openfaas_properties = {

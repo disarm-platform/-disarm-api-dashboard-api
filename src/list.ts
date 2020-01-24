@@ -46,7 +46,8 @@ async function fetch_airtable(): Promise<AirtableRecord[]> {
     } else {
       return [];
     }
-  } catch {
+  } catch (e) {
+    console.error(e);
     throw new Error('Missing data from Airtable request');
   }
 }
@@ -64,6 +65,7 @@ async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
       throw new Error('Broken');
     }
   } catch (e) {
+    console.error(e);
     throw new Error('Missing data from OpenFaas request');
   }
 }
@@ -104,8 +106,8 @@ function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[
       deployed_image_version: !isUndefined(openfaas_properties.image) ? openfaas_properties.image : null,
       deployed_invocation_count: !isUndefined(openfaas_properties.invocationCount) ?
         openfaas_properties.invocationCount : null,
-      available_replicas: !isUndefined(openfaas_properties.availableReplicas) ?
-        openfaas_properties.availableReplicas : null,
+      replicas: !isUndefined(openfaas_properties.replicas) ?
+        openfaas_properties.replicas : null,
     };
 
     const basic = {
@@ -144,8 +146,8 @@ function find_openfaas_record_by_name(name: string, openfaas_data: OpenFaasRecor
 function compute(basic: BasicRecord): ComputedRecord {
   const deployed = !!(basic.deployed_image_version !== null);
   const hideable = !!(deployed && basic.hide_from_deploy);
-  const running = !!(deployed && basic.available_replicas && basic.available_replicas > 0);
-  const sleeping = !!(deployed && (basic.scale_to_zero && basic.available_replicas === 0));
+  const running = !!(deployed && basic.replicas && basic.replicas > 0);
+  const sleeping = !!(deployed && (basic.scale_to_zero && basic.replicas === 0));
   const testable = !!(deployed && (basic.test_req !== null));
   const upgradable = !!(deployed && !isNull(basic.deployed_image_version) &&
     !isNull(basic.target_image_version) && (basic.deployed_image_version !== basic.target_image_version));

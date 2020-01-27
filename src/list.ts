@@ -89,7 +89,7 @@ function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[
 
     const airtable_section: AirtableSection = {
       repo: airtable_record?.repo,
-      target_image_version: airtable_record?.image_version,
+      target_image_version: airtable_record?.target_image_version,
       env_vars: airtable_record?.env_vars,
       labels: airtable_record?.labels,
       secrets: airtable_record?.secrets,

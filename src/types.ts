@@ -1,6 +1,6 @@
 export interface AirtableRecord {
   function_name: string;
-  image_version: string;
+  target_image_version: string;
   repo: string;
   test_req: string;
   env_vars: string;

@@ -28,8 +28,8 @@ async function fetch_and_combine() {
   try {
     airtable_data = await fetch_airtable();
     openfaas_data = await fetch_openfaas();
-    fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
-    fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
+  //   fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
+  //   fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
     // airtable_data = JSON.parse(fs.readFileSync('sample_responses/airtable_data.json', 'utf8'));
     // openfaas_data = JSON.parse(fs.readFileSync('sample_responses/openfaas_data.json', 'utf8'));
   } catch (e) {

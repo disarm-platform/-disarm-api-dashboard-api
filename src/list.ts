@@ -26,12 +26,12 @@ async function fetch_and_combine() {
   let airtable_data: IncomingAirtableRecord[];
 
   try {
-    airtable_data = await fetch_airtable();
-    openfaas_data = await fetch_openfaas();
-  //   fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
-  //   fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
-    // airtable_data = JSON.parse(fs.readFileSync('sample_responses/airtable_data.json', 'utf8'));
-    // openfaas_data = JSON.parse(fs.readFileSync('sample_responses/openfaas_data.json', 'utf8'));
+    // airtable_data = await fetch_airtable();
+    // openfaas_data = await fetch_openfaas();
+    // fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
+    // fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
+    airtable_data = JSON.parse(fs.readFileSync('sample_responses/airtable_data.json', 'utf8'));
+    openfaas_data = JSON.parse(fs.readFileSync('sample_responses/openfaas_data.json', 'utf8'));
   } catch (e) {
     console.error(e);
     throw new Error(
@@ -97,7 +97,7 @@ function combine(
 
     const airtable_section: OutgoingAirtableSection = {
       repo: airtable_record?.repo,
-      target_image_version: airtable_record?.target_image_version,
+      target_image_version: airtable_record?.image,
     };
 
     const openfaas_section: OutgoingOpenfaasSection = {

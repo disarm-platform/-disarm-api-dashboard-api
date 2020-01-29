@@ -1,11 +1,7 @@
 export interface IncomingAirtableRecord {
   function_name: string;
-  target_image_version: string;
+  image: string;
   repo: string;
-  test_req: string;
-  env_vars: string;
-  labels: string;
-  secrets: string;
 }
 
 export interface IncomingOpenFaasRecord {

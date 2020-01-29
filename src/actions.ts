@@ -23,7 +23,6 @@ export async function deploy(req: express.Request, res: express.Response) {
       console.log(error);
       return action_error(res, error.response.data);
     } else {
-      console.log('2');
       return action_error(res, error.message);
     }
   }
@@ -31,7 +30,7 @@ export async function deploy(req: express.Request, res: express.Response) {
 }
 
 function has_required_deploy_params(req: express.Request): boolean {
-  const {service, image } = req.body;
+  const { service, image } = req.body;
   return service && image;
 }
 

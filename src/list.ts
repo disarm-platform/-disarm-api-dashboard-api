@@ -13,8 +13,6 @@ import {
 export async function list(req: express.Request, res: express.Response) {
   try {
     const data = await fetch_and_combine();
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Methods', 'GET, POST');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   } catch (error) {
@@ -139,7 +137,7 @@ function compute(
   airtable_record?: AirtableRecord,
   openfaas_record?: OpenFaasRecord
 ): ComputedSection {
-  const deployed = !!(basic.deployed_image_version !== null);
+  const deployed = openfaas_record !== undefined;
   const running = !!(deployed && basic.replicas && basic.replicas > 0);
   const testable = !!(deployed && (basic.test_req !== null));
   const upgradable = !!(deployed && !isNull(basic.deployed_image_version) &&

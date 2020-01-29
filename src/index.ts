@@ -22,6 +22,7 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
       break;
     case 'deploy':
       deploy(req, res);
+      return;
       break;
     case 'undeploy':
       if (function_name) {

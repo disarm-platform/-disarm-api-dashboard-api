@@ -1,5 +1,6 @@
 import axios from 'axios';
 import express from 'express';
+import YAML from 'yaml';
 
 import { CONFIG } from './config';
 
@@ -11,15 +12,17 @@ export async function deploy(req: express.Request, res: express.Response) {
 
     const url = `${CONFIG.openfaas_url}/system/functions`;
     const headers = { Authorization: CONFIG.openfaas_key };
-    const data = req.body;
-
-    await axios({
-      url,
-      method: 'POST',
-      headers,
-      data,
-    });
-
+    const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const service = data.service;
+    const payload = get_deploy_params(service);
+    await axios.post(url, data, { headers }).then((response) => {
+      console.log(response);
+      console.log('Depployed, yeey :)');
+    })
+      .catch((error) => {
+        console.log('Ohh no, there was an error :(');
+        console.log(error);
+      });
     return action_success(res, `Deployed ${JSON.stringify(req.body)}`);
   } catch (error) {
     if ('response' in error) {
@@ -31,10 +34,31 @@ export async function deploy(req: express.Request, res: express.Response) {
   }
 
 }
-
+async function get_deploy_params(service: string){
+  const stack_url = `https://raw.githubusercontent.com/disarm-platform/${service}/master/stack.yml`;
+    await axios.get(stack_url).then((response) => {
+      const obj = YAML.parse(response.data).functions[`${service}`];
+      const image = obj.image;
+      const envVars = obj.environment;
+      const secrets = obj.secrets;
+      const labels = obj.labels;
+      const payload = {
+        service,
+        image,
+        envVars,
+        secrets,
+        labels
+      };
+       return payload;
+      })
+    .catch((error) => {
+        console.log(error);
+        return {};
+    });
+}
 function has_required_deploy_params(req: express.Request): boolean {
-  const { service, image } = req.body;
-  return (service && image);
+  // const {service, image } = req.body; 
+  return true;
 }
 
 export async function undeploy(req: express.Request, res: express.Response, function_name: string) {

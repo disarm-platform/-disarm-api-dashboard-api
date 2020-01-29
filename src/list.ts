@@ -1,12 +1,12 @@
 import fs from 'fs';
 import axios from 'axios';
 import express from 'express';
-import { get, isNull, isUndefined, uniq } from 'lodash';
+import { isUndefined, uniq, get } from 'lodash';
 
 import { CONFIG } from './config';
 import {
   IncomingAirtableRecord, IncomingOpenFaasRecord,
-  OutgoingAirtableSection, ComputedSection, CombinedRecord, OutgoingBasicRecord, OutgoingOpenfaasSection
+  OutgoingAirtableSection, OutgoingCombinedRecord, OutgoingOpenfaasSection, OutgoingBasicRecord
 } from './types';
 
 export async function list(req: express.Request, res: express.Response) {
@@ -26,12 +26,12 @@ async function fetch_and_combine() {
   let airtable_data: IncomingAirtableRecord[];
 
   try {
-    // airtable_data = await fetch_airtable();
-    // openfaas_data = await fetch_openfaas();
-    // fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
-    // fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
-    airtable_data = JSON.parse(fs.readFileSync('sample_responses/airtable_data.json', 'utf8'));
-    openfaas_data = JSON.parse(fs.readFileSync('sample_responses/openfaas_data.json', 'utf8'));
+    airtable_data = await fetch_airtable();
+    openfaas_data = await fetch_openfaas();
+    fs.writeFileSync('sample_responses/airtable_data.json', JSON.stringify(airtable_data));
+    fs.writeFileSync('sample_responses/openfaas_data.json', JSON.stringify(openfaas_data));
+    // airtable_data = JSON.parse(fs.readFileSync('sample_responses/airtable_data.json', 'utf8'));
+    // openfaas_data = JSON.parse(fs.readFileSync('sample_responses/openfaas_data.json', 'utf8'));
   } catch (e) {
     console.error(e);
     throw new Error(
@@ -77,19 +77,27 @@ async function fetch_openfaas(): Promise<IncomingOpenFaasRecord[]> {
   }
 }
 
-function combine(airtable_data: IncomingAirtableRecord[], openfaas_data: IncomingOpenFaasRecord[]): CombinedRecord[] {
-  const uniq_names = all_unique_names(airtable_data, openfaas_data);
+function combine(
+  airtable_data: IncomingAirtableRecord[], openfaas_data: IncomingOpenFaasRecord[]
+): OutgoingCombinedRecord[] {
+  const function_names = all_unique_names(airtable_data, openfaas_data);
 
-  return uniq_names.map((uniq_name) => {
-    const airtable_record = find_airtable_record_by_name(uniq_name, airtable_data);
-    const openfaas_record = find_openfaas_record_by_name(uniq_name, openfaas_data);
+  return function_names.map((function_name) => {
+    const airtable_record = find_airtable_record_by_name(function_name, airtable_data);
+    const openfaas_record = find_openfaas_record_by_name(function_name, openfaas_data);
+
+    const missing_from_airtable = isUndefined(airtable_record?.function_name);
+    const missing_from_openfaas = isUndefined(openfaas_record?.image);
+
+    const basic: OutgoingBasicRecord = {
+      function_name,
+      missing_from_airtable,
+      missing_from_openfaas,
+    };
 
     const airtable_section: OutgoingAirtableSection = {
       repo: airtable_record?.repo,
       target_image_version: airtable_record?.target_image_version,
-      env_vars: airtable_record?.env_vars,
-      labels: airtable_record?.labels,
-      secrets: airtable_record?.secrets,
     };
 
     const openfaas_section: OutgoingOpenfaasSection = {
@@ -98,18 +106,13 @@ function combine(airtable_data: IncomingAirtableRecord[], openfaas_data: Incomin
       replicas: openfaas_record?.replicas,
     };
 
-    const basic: OutgoingBasicRecord = {
-      function_name: uniq_name,
+    const combined: OutgoingCombinedRecord = {
+      ...basic,
       ...airtable_section,
       ...openfaas_section,
     };
 
-    const computed = compute(basic, airtable_record, openfaas_record);
-
-    return {
-      ...basic,
-      computed,
-    };
+    return combined;
   });
 }
 
@@ -133,29 +136,4 @@ function find_openfaas_record_by_name(
   name: string, openfaas_data: IncomingOpenFaasRecord[]
 ): IncomingOpenFaasRecord | undefined {
   return openfaas_data.find((r) => r.name === name);
-}
-
-function compute(
-  basic: OutgoingBasicRecord,
-  airtable_record?: IncomingAirtableRecord,
-  openfaas_record?: IncomingOpenFaasRecord
-): ComputedSection {
-  const deployed = openfaas_record !== undefined;
-  const running = !!(deployed && basic.replicas && basic.replicas > 0);
-  const testable = !!(deployed && (basic.test_req !== null));
-  const upgradable = !!(deployed && !isNull(basic.deployed_image_version) &&
-    !isNull(basic.target_image_version) && (basic.deployed_image_version !== basic.target_image_version));
-  const missing_from_airtable = isUndefined(airtable_record?.function_name);
-  const missing_from_openfaas = isUndefined(openfaas_record?.image);
-
-  const computed = {
-    deployed,
-    running,
-    testable,
-    upgradable,
-    missing_from_airtable,
-    missing_from_openfaas,
-  };
-
-  return computed;
 }

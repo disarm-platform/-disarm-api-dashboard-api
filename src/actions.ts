@@ -31,10 +31,31 @@ export async function deploy(req: express.Request, res: express.Response) {
   }
 
 }
-
+async function get_deploy_params(service: string){
+  const stack_url = `https://raw.githubusercontent.com/disarm-platform/${service}/master/stack.yml`;
+    await axios.get(stack_url).then((response) => {
+      const obj = YAML.parse(response.data).functions[`${service}`];
+      const image = obj.image;
+      const envVars = obj.environment;
+      const secrets = obj.secrets;
+      const labels = obj.labels;
+      const payload = {
+        service,
+        image,
+        envVars,
+        secrets,
+        labels
+      };
+       return payload;
+      })
+    .catch((error) => {
+        console.log(error);
+        return {};
+    });
+}
 function has_required_deploy_params(req: express.Request): boolean {
-  const { service, image } = req.body;
-  return (service && image);
+  // const {service, image } = req.body; 
+  return true;
 }
 
 export async function undeploy(req: express.Request, res: express.Response, function_name: string) {

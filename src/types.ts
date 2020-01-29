@@ -1,4 +1,4 @@
-export interface AirtableRecord {
+export interface IncomingAirtableRecord {
   function_name: string;
   target_image_version: string;
   repo: string;
@@ -8,7 +8,7 @@ export interface AirtableRecord {
   secrets: string;
 }
 
-export interface OpenFaasRecord {
+export interface IncomingOpenFaasRecord {
   name: string;
   image: string;
   invocationCount: number;
@@ -16,9 +16,9 @@ export interface OpenFaasRecord {
   availableReplicas: number;
 }
 
-export type BasicRecord = { function_name: string } & AirtableSection & OpenfaasSection;
+export type OutgoingBasicRecord = { function_name: string } & OutgoingAirtableSection & OutgoingOpenfaasSection;
 
-export interface AirtableSection {
+export interface OutgoingAirtableSection {
   repo?: string;
   target_image_version?: string;
   env_vars?: string;
@@ -27,7 +27,7 @@ export interface AirtableSection {
   test_req?: string;
 }
 
-export interface OpenfaasSection {
+export interface OutgoingOpenfaasSection {
   deployed_image_version?: string; // openfaas_record.image
   deployed_invocation_count?: number; // openfaas_record.invocationCount
   replicas?: number; // openfaas_record.replicas
@@ -42,4 +42,4 @@ export interface ComputedSection {
   missing_from_openfaas: boolean;
 }
 
-export interface CombinedRecord extends BasicRecord { computed: ComputedSection; }
+export interface CombinedRecord extends OutgoingBasicRecord { computed: ComputedSection; }

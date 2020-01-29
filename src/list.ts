@@ -5,9 +5,8 @@ import { get, isNull, isUndefined, uniq } from 'lodash';
 
 import { CONFIG } from './config';
 import {
-  AirtableRecord, OpenFaasRecord,
-  AirtableSection, OpenfaasSection,
-  ComputedSection, CombinedRecord, BasicRecord
+  IncomingAirtableRecord, IncomingOpenFaasRecord,
+  OutgoingAirtableSection, ComputedSection, CombinedRecord, OutgoingBasicRecord, OutgoingOpenfaasSection
 } from './types';
 
 export async function list(req: express.Request, res: express.Response) {
@@ -23,8 +22,8 @@ export async function list(req: express.Request, res: express.Response) {
 }
 
 async function fetch_and_combine() {
-  let openfaas_data: OpenFaasRecord[];
-  let airtable_data: AirtableRecord[];
+  let openfaas_data: IncomingOpenFaasRecord[];
+  let airtable_data: IncomingAirtableRecord[];
 
   try {
     // airtable_data = await fetch_airtable();
@@ -43,7 +42,7 @@ async function fetch_and_combine() {
   return combine(airtable_data, openfaas_data);
 }
 
-async function fetch_airtable(): Promise<AirtableRecord[]> {
+async function fetch_airtable(): Promise<IncomingAirtableRecord[]> {
   const url = CONFIG.airtable_url;
   const headers = { Authorization: CONFIG.airtable_key };
   try {
@@ -60,7 +59,7 @@ async function fetch_airtable(): Promise<AirtableRecord[]> {
   }
 }
 
-async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
+async function fetch_openfaas(): Promise<IncomingOpenFaasRecord[]> {
   //  Make request
   const url = `${CONFIG.openfaas_url}/system/functions`;
   const headers = { Authorization: CONFIG.openfaas_key };
@@ -78,14 +77,14 @@ async function fetch_openfaas(): Promise<OpenFaasRecord[]> {
   }
 }
 
-function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]): CombinedRecord[] {
+function combine(airtable_data: IncomingAirtableRecord[], openfaas_data: IncomingOpenFaasRecord[]): CombinedRecord[] {
   const uniq_names = all_unique_names(airtable_data, openfaas_data);
 
   return uniq_names.map((uniq_name) => {
     const airtable_record = find_airtable_record_by_name(uniq_name, airtable_data);
     const openfaas_record = find_openfaas_record_by_name(uniq_name, openfaas_data);
 
-    const airtable_section: AirtableSection = {
+    const airtable_section: OutgoingAirtableSection = {
       repo: airtable_record?.repo,
       target_image_version: airtable_record?.target_image_version,
       env_vars: airtable_record?.env_vars,
@@ -93,13 +92,13 @@ function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[
       secrets: airtable_record?.secrets,
     };
 
-    const openfaas_section: OpenfaasSection = {
+    const openfaas_section: OutgoingOpenfaasSection = {
       deployed_image_version: openfaas_record?.image,
       deployed_invocation_count: openfaas_record?.invocationCount,
       replicas: openfaas_record?.replicas,
     };
 
-    const basic: BasicRecord = {
+    const basic: OutgoingBasicRecord = {
       function_name: uniq_name,
       ...airtable_section,
       ...openfaas_section,
@@ -114,7 +113,7 @@ function combine(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[
   });
 }
 
-function all_unique_names(airtable_data: AirtableRecord[], openfaas_data: OpenFaasRecord[]) {
+function all_unique_names(airtable_data: IncomingAirtableRecord[], openfaas_data: IncomingOpenFaasRecord[]) {
   const all_names = airtable_data.map((airtable_record) => {
     return airtable_record.function_name;
   }).concat(openfaas_data.map((openfaas_record) => {
@@ -124,18 +123,22 @@ function all_unique_names(airtable_data: AirtableRecord[], openfaas_data: OpenFa
   return unique;
 }
 
-function find_airtable_record_by_name(name: string, airtable_data: AirtableRecord[]): AirtableRecord | undefined {
+function find_airtable_record_by_name(
+  name: string, airtable_data: IncomingAirtableRecord[]
+): IncomingAirtableRecord | undefined {
   return airtable_data.find((r) => r.function_name === name);
 }
 
-function find_openfaas_record_by_name(name: string, openfaas_data: OpenFaasRecord[]): OpenFaasRecord | undefined {
+function find_openfaas_record_by_name(
+  name: string, openfaas_data: IncomingOpenFaasRecord[]
+): IncomingOpenFaasRecord | undefined {
   return openfaas_data.find((r) => r.name === name);
 }
 
 function compute(
-  basic: BasicRecord,
-  airtable_record?: AirtableRecord,
-  openfaas_record?: OpenFaasRecord
+  basic: OutgoingBasicRecord,
+  airtable_record?: IncomingAirtableRecord,
+  openfaas_record?: IncomingOpenFaasRecord
 ): ComputedSection {
   const deployed = openfaas_record !== undefined;
   const running = !!(deployed && basic.replicas && basic.replicas > 0);

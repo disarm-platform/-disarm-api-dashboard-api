@@ -1,5 +1,6 @@
 import axios from 'axios';
 import express from 'express';
+import YAML from 'yaml';
 
 import { CONFIG } from './config';
 

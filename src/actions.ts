@@ -12,14 +12,16 @@ export async function deploy(req: express.Request, res: express.Response) {
     const url = `${CONFIG.openfaas_url}/system/functions`;
     const headers = { Authorization: CONFIG.openfaas_key };
     const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    console.log(typeof data);
-    await axios.post('/user',data).then((response) => {
+    const service = data.service;
+    const payload = get_deploy_params(service);
+    await axios.post(url, data, { headers }).then((response) => {
       console.log(response);
+      console.log('Depployed, yeey :)');
     })
       .catch((error) => {
+        console.log('Ohh no, there was an error :(');
         console.log(error);
       });
-    console.log('Well its not me, check the return ');
     return action_success(res, `Deployed ${JSON.stringify(req.body)}`);
   } catch (error) {
     if ('response' in error) {

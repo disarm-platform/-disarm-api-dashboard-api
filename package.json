@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc -p .",
-    "start": "npm run build; functions-framework --source=lib --target=get_data",
+    "start": "npm run build && functions-framework --source=lib --target=get_data",
+    "debug": "node -r ts-node/register --inspect node_modules/@google-cloud/functions-framework --source=src --target=get_data",
     "deploy": "npm run build && gcloud functions deploy disarm-api-dashboard-api --region=europe-west1 --entry-point=get_data",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

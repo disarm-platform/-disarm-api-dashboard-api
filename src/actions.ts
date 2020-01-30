@@ -18,12 +18,13 @@ export async function deploy(req: express.Request, res: express.Response) {
     // console.log(fn_res.data);
 
     return action_success(res, `Deployed ${JSON.stringify(req.body)}`);
-  } catch (error) {
-    if ('response' in error) {
-      console.log(error);
-      return action_error(res, error.response.data);
+  } catch (e) {
+    console.log(e);
+    if ('response' in e) {
+      console.log(e);
+      return action_error(res, e.response.data);
     } else {
-      return action_error(res, error.message);
+      return action_error(res, e.message);
     }
   }
 

@@ -1,10 +1,11 @@
 import express from 'express';
 
 import { list } from './list';
-import { deploy, undeploy } from './actions';
+import { undeploy } from './undeploy';
+import { deploy } from './deploy';
 
 exports.get_data = async (req: express.Request, res: express.Response) => {
-  const [, command, function_name] = req.path.split('/'); // Yup, need that first comma!
+  const [, command] = req.path.split('/'); // Yup, need that first comma!
 
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST');
@@ -22,16 +23,9 @@ exports.get_data = async (req: express.Request, res: express.Response) => {
       break;
     case 'deploy':
       deploy(req, res);
-      return;
       break;
     case 'undeploy':
-      if (function_name) {
-        undeploy(req, res, function_name);
-      } else {
-        res.writeHead(400);
-        res.end('Missing function_name in path');
-        return;
-      }
+      undeploy(req, res);
       break;
     default:
       res.writeHead(400);
